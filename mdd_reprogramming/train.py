@@ -180,7 +180,7 @@ def train_fold(
     ).to(device)
 
     # Loss
-    loss_fn = build_loss(train_dataset.labels, use_custom_loss=cfg.use_custom_loss)
+    loss_fn = build_loss(train_dataset.labels)
     loss_fn = loss_fn.to(device)
 
     # Optimizer — only trainable parameters
@@ -272,7 +272,7 @@ def evaluate_on_test(
         ).to(device)
         model.load_state_dict(torch.load(ckpt_path, map_location=device, weights_only=True))
 
-        loss_fn = build_loss(test_dataset.labels, use_custom_loss=cfg.use_custom_loss)
+        loss_fn = build_loss(test_dataset.labels)
         loss_fn = loss_fn.to(device)
         _, metrics = evaluate(model, test_loader, loss_fn, device)
         all_fold_metrics.append(metrics)

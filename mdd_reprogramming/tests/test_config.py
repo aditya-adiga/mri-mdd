@@ -23,7 +23,6 @@ class TestParseArgs:
         assert cfg.dropout == 0.2
         assert cfg.n_folds == 10
         assert cfg.blind_test_frac == 0.1
-        assert cfg.use_custom_loss is True
         assert cfg.baseline is False
         assert cfg.no_wandb is False
         assert cfg.seed == 42
@@ -44,11 +43,6 @@ class TestParseArgs:
         assert cfg.baseline is True
         assert cfg.no_wandb is True
         assert cfg.seed == 123
-
-    def test_disable_custom_loss(self) -> None:
-        """Custom loss can be disabled via --no-use_custom_loss."""
-        cfg = parse_args(["--no-use_custom_loss"])
-        assert cfg.use_custom_loss is False
 
     def test_paths_are_pathlib(self) -> None:
         """Path arguments are pathlib.Path instances."""

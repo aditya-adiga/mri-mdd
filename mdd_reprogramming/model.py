@@ -256,50 +256,15 @@ def compute_class_weights(labels: list[int], num_classes: int = 2) -> torch.Tens
     return torch.tensor(weights, dtype=torch.float32)
 
 
-class CustomCrossEntropyLoss(nn.Module):
-    """Cross-entropy loss that applies softmax before nn.CrossEntropyLoss.
-
-    In prior work on the MDD dataset, the standard CE formulation caused
-    training to stall at loss ~ 0.69. Passing softmax(logits) instead of
-    raw logits resolved this.
-
-    Args:
-        weight: Per-class weights tensor.
-    """
-
-    def __init__(self, weight: torch.Tensor | None = None) -> None:
-        super().__init__()
-        self.ce = nn.CrossEntropyLoss(weight=weight)
-
-    def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
-        """Compute custom CE loss.
-
-        Args:
-            logits: Raw logits of shape (N, C).
-            targets: Target labels of shape (N,).
-
-        Returns:
-            Scalar loss tensor.
-        """
-        probs = torch.softmax(logits, dim=1)
-        return self.ce(probs, targets)
-
-
-def build_loss(
-    labels: list[int], use_custom_loss: bool = True
-) -> nn.Module:
-    """Build the loss function with class weights.
+def build_loss(labels: list[int]) -> nn.Module:
+    """Build CrossEntropyLoss with class weights.
 
     Args:
         labels: Training fold labels for computing class weights.
-        use_custom_loss: If True, use softmax-before-CE variant.
 
     Returns:
-        Loss module (either CustomCrossEntropyLoss or nn.CrossEntropyLoss).
+        nn.CrossEntropyLoss with per-class weights.
     """
     class_weights = compute_class_weights(labels)
-    if use_custom_loss:
-        logger.info("Using custom loss (softmax before CE)")
-        return CustomCrossEntropyLoss(weight=class_weights)
-    logger.info("Using standard CrossEntropyLoss")
+    logger.info("Using CrossEntropyLoss with class weights")
     return nn.CrossEntropyLoss(weight=class_weights)

@@ -67,7 +67,7 @@ def run_evaluation(args: list[str] | None = None) -> dict[str, float]:
     logger.info("Loaded checkpoint: %s", cfg.checkpoint)
 
     # Build loss and evaluate
-    loss_fn = build_loss(test_dataset.labels, use_custom_loss=cfg.use_custom_loss)
+    loss_fn = build_loss(test_dataset.labels)
     loss_fn = loss_fn.to(device)
 
     test_loader = DataLoader(

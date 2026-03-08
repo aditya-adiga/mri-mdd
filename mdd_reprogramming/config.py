@@ -104,13 +104,7 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         help="Fraction of data held out as blind test set",
     )
 
-    # Loss & mode flags
-    parser.add_argument(
-        "--use_custom_loss",
-        action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Use custom loss (softmax before CE) instead of standard CE",
-    )
+    # Mode flags
     parser.add_argument(
         "--baseline",
         action="store_true",
