@@ -48,7 +48,7 @@ mdd_reprogramming/
 
 ---
 
-## Phase 1 — Project Scaffold & Config
+## Phase 1 — Project Scaffold & Config ✅
 
 Create the base project structure:
 
@@ -81,7 +81,7 @@ Create the base project structure:
 
 ---
 
-## Phase 2 — Dataset (`dataset.py`)
+## Phase 2 — Dataset (`dataset.py`) ✅
 
 Implement a PyTorch Dataset class `MRIDataset` that:
 
@@ -218,6 +218,13 @@ Add `pytest.ini` with `testpaths = tests` and `Makefile` with a `make test` targ
 ## Definition of Done
 
 All phases are complete when:
+- [x] Phase 1 — Project Scaffold & Config (4 tests passing)
+- [x] Phase 2 — Dataset (12 tests passing)
+- [ ] Phase 3 — Model Architecture
+- [ ] Phase 4 — Loss Function
+- [ ] Phase 5 — Training Loop
+- [ ] Phase 6 — Evaluation
+- [ ] Phase 7 — Remaining unit tests (test_model, test_loss, test_train)
 - [ ] All files listed in the project structure exist
 - [ ] `make test` passes with no failures
 - [ ] A dry run with `--no_wandb --baseline` completes on synthetic data without errors
