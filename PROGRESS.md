@@ -175,5 +175,23 @@
 
 ### Cumulative: 49/49 tests passing
 
-### Remaining
-- Phase 7: Definition of Done checks
+---
+
+## Phase 7 — Definition of Done (COMPLETE)
+
+### Checklist
+- [x] All 15 required files exist
+- [x] `pytest -v` passes: 49/49 tests, 0 failures
+- [x] Dry run `--no_wandb --baseline` on synthetic data completes without errors
+- [x] PROGRESS.md fully up to date
+
+### Test Breakdown
+| File | Tests |
+|------|-------|
+| test_config.py | 4 |
+| test_dataset.py | 12 |
+| test_model.py | 10 |
+| test_loss.py | 11 |
+| test_train.py | 6 |
+| test_evaluate.py | 6 |
+| **Total** | **49** |

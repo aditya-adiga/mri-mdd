@@ -184,7 +184,7 @@ Implement a standalone `evaluate.py` script that:
 
 ---
 
-## Phase 7 — Unit Tests (`tests/`)
+## Phase 7 — Unit Tests (`tests/`) ✅
 
 Use `pytest`. Mock the Hugging Face model download in all tests using `unittest.mock` so tests run fully offline.
 
@@ -224,8 +224,8 @@ All phases are complete when:
 - [x] Phase 4 — Loss Function (11 tests passing)
 - [x] Phase 5 — Training Loop (6 tests passing)
 - [x] Phase 6 — Evaluation (6 tests passing)
-- [ ] Phase 7 — Remaining unit tests (test_model, test_loss, test_train)
-- [ ] All files listed in the project structure exist
-- [ ] `make test` passes with no failures
-- [ ] A dry run with `--no_wandb --baseline` completes on synthetic data without errors
-- [ ] `PROGRESS.md` is fully up to date
+- [x] Phase 7 — All unit tests complete (49/49 passing)
+- [x] All files listed in the project structure exist
+- [x] `pytest -v` passes with no failures (49/49)
+- [x] A dry run with `--no_wandb --baseline` completes on synthetic data without errors
+- [x] `PROGRESS.md` is fully up to date
