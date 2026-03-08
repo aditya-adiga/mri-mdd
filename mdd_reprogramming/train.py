@@ -187,12 +187,24 @@ def train_fold(
     trainable_params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.AdamW(trainable_params, lr=cfg.lr)
 
+    import csv as csv_mod
+    import json
+
     best_auroc = -1.0
     best_metrics: dict[str, float] = {}
     best_epoch = -1
     fold_dir = checkpoint_dir / f"fold_{fold}"
     fold_dir.mkdir(parents=True, exist_ok=True)
     ckpt_path = fold_dir / "best.pt"
+
+    # Metrics log file
+    metrics_csv_path = fold_dir / "metrics.csv"
+    csv_file = open(metrics_csv_path, "w", newline="")
+    csv_writer = csv_mod.writer(csv_file)
+    csv_writer.writerow([
+        "epoch", "train_loss", "val_loss",
+        "Accuracy", "Sensitivity", "Specificity", "F1", "AUROC", "AUPRC",
+    ])
 
     for epoch in range(cfg.epochs):
         train_loss = train_one_epoch(model, train_loader, loss_fn, optimizer, device)
@@ -206,6 +218,14 @@ def train_fold(
             val_metrics["AUROC"], val_metrics["AUPRC"],
         )
 
+        # Log to CSV
+        csv_writer.writerow([
+            epoch + 1, f"{train_loss:.6f}", f"{val_loss:.6f}",
+            *[f"{val_metrics[k]:.6f}" for k in
+              ["Accuracy", "Sensitivity", "Specificity", "F1", "AUROC", "AUPRC"]],
+        ])
+        csv_file.flush()
+
         if use_wandb:
             import wandb
 
@@ -216,11 +236,28 @@ def train_fold(
                 "epoch": epoch + 1,
             })
 
-        if val_metrics["AUROC"] > best_auroc:
+        # Save checkpoint — always on first epoch, then whenever AUROC improves
+        if epoch == 0 or val_metrics["AUROC"] > best_auroc:
+            if val_metrics["AUROC"] > best_auroc:
+                logger.info(
+                    "Fold %d new best AUROC=%.4f at epoch %d (previous=%.4f)",
+                    fold, val_metrics["AUROC"], epoch + 1, best_auroc,
+                )
             best_auroc = val_metrics["AUROC"]
             best_metrics = val_metrics.copy()
+            best_metrics["train_loss"] = train_loss
+            best_metrics["val_loss"] = val_loss
             best_epoch = epoch + 1
+            # Save as both best.pt and epoch-specific file
             torch.save(model.state_dict(), ckpt_path)
+            torch.save(model.state_dict(), fold_dir / f"epoch_{epoch + 1}.pt")
+
+    csv_file.close()
+
+    # Save best epoch info
+    best_info = {"best_epoch": best_epoch, "best_auroc": best_auroc, **best_metrics}
+    with open(fold_dir / "best_info.json", "w") as f:
+        json.dump(best_info, f, indent=2)
 
     logger.info(
         "Fold %d best AUROC=%.4f at epoch %d", fold, best_auroc, best_epoch
