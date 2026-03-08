@@ -115,11 +115,12 @@ class TestSmokeTraining:
     ) -> None:
         """Smoke test: 2 epochs on 10 synthetic samples in baseline mode completes."""
         nifti_dir, csv_path = synthetic_data_dir
-        checkpoint_dir = tmp_path / "checkpoints"
+        ckpt_dir = tmp_path / "checkpoints"
 
         main([
             "--data_dir", str(nifti_dir),
             "--labels_csv", str(csv_path),
+            "--checkpoint_dir", str(ckpt_dir),
             "--epochs", "2",
             "--batch_size", "2",
             "--n_folds", "2",
@@ -128,11 +129,14 @@ class TestSmokeTraining:
             "--seed", "42",
         ])
 
-        # Verify checkpoints were saved
-        ckpt_dir = Path("checkpoints")
+        # Verify checkpoints were saved in timestamped run dir
         assert ckpt_dir.exists()
-        ckpt_files = list(ckpt_dir.glob("best_fold_*.pt"))
-        assert len(ckpt_files) >= 1
+        run_dirs = sorted(ckpt_dir.iterdir())
+        assert len(run_dirs) == 1
+        latest_run = run_dirs[0]
+        fold_dirs = list(latest_run.glob("fold_*"))
+        assert len(fold_dirs) >= 1
+        assert (fold_dirs[0] / "best.pt").exists()
 
     @patch("mdd_reprogramming.model.AutoModel.from_pretrained")
     def test_optimizer_only_trainable_params(
@@ -176,10 +180,12 @@ class TestSmokeTraining:
     ) -> None:
         """A checkpoint file is saved after training."""
         nifti_dir, csv_path = synthetic_data_dir
+        ckpt_dir = tmp_path / "checkpoints"
 
         main([
             "--data_dir", str(nifti_dir),
             "--labels_csv", str(csv_path),
+            "--checkpoint_dir", str(ckpt_dir),
             "--epochs", "1",
             "--batch_size", "5",
             "--n_folds", "2",
@@ -188,11 +194,15 @@ class TestSmokeTraining:
             "--seed", "42",
         ])
 
-        ckpt_dir = Path("checkpoints")
-        ckpt_files = list(ckpt_dir.glob("best_fold_*.pt"))
-        assert len(ckpt_files) == 2
+        run_dirs = sorted(ckpt_dir.iterdir())
+        latest_run = run_dirs[0]
+        fold_dirs = sorted(latest_run.glob("fold_*"))
+        assert len(fold_dirs) == 2
 
         # Verify checkpoint can be loaded
-        state_dict = torch.load(ckpt_files[0], map_location="cpu", weights_only=True)
+        state_dict = torch.load(fold_dirs[0] / "best.pt", map_location="cpu", weights_only=True)
         assert isinstance(state_dict, dict)
         assert len(state_dict) > 0
+
+        # Verify config.json was saved
+        assert (latest_run / "config.json").exists()
