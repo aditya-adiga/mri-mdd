@@ -28,7 +28,7 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--data_dir",
         type=Path,
-        default=Path("data"),
+        default=Path("data/wc1_MDD_VBM_dataset"),
         help="Path to directory containing NIfTI files",
     )
     parser.add_argument(

@@ -31,9 +31,8 @@ N_PATCHES = SPATIAL[0] * SPATIAL[1] * SPATIAL[2]  # 7 * 9 * 7 = 441
 def _make_fake_llm(d_llm: int = D_LLM) -> MagicMock:
     """Create a fake LLM that returns random hidden states."""
     fake_llm = MagicMock(spec=nn.Module)
-    fake_llm.parameters.return_value = [
-        nn.Parameter(torch.randn(4, 4), requires_grad=True)
-    ]
+    _param = nn.Parameter(torch.randn(4, 4), requires_grad=True)
+    fake_llm.parameters.side_effect = lambda: iter([_param])
 
     def fake_forward(inputs_embeds: torch.Tensor, attention_mask: torch.Tensor) -> SimpleNamespace:
         n, p, _ = inputs_embeds.shape

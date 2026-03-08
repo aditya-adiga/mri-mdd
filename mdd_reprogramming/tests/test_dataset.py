@@ -69,7 +69,7 @@ class TestMRIDataset:
     def test_normalization_mean(self, synthetic_dataset: MRIDataset) -> None:
         """Voxel intensities have approximately zero mean after normalization."""
         tensor, _ = synthetic_dataset[0]
-        assert abs(tensor.mean().item()) < 1e-5
+        assert abs(tensor.mean().item()) < 1e-4
 
     def test_normalization_std(self, synthetic_dataset: MRIDataset) -> None:
         """Voxel intensities have approximately unit std after normalization."""

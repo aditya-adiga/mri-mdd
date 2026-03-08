@@ -90,13 +90,18 @@ class MRIDataset(Dataset):
         img = nib.load(file_path)
         data = img.get_fdata(dtype=np.float32)
 
-        # Normalize to zero mean and unit variance
-        mean = data.mean()
-        std = data.std()
-        if std > 0:
-            data = (data - mean) / std
-        else:
-            data = data - mean
+        # Normalize brain voxels to zero mean and unit variance
+        # Background (zero) voxels are left at zero to avoid
+        # dominating the signal (~66% of volume is background)
+        brain_mask = data > 0
+        if brain_mask.any():
+            brain_vals = data[brain_mask]
+            mean = brain_vals.mean()
+            std = brain_vals.std()
+            if std > 0:
+                data[brain_mask] = (brain_vals - mean) / std
+            else:
+                data[brain_mask] = brain_vals - mean
 
         # Add channel dimension: (D, H, W) -> (1, D, H, W)
         tensor = torch.from_numpy(data).unsqueeze(0)

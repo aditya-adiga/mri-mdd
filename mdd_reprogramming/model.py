@@ -218,13 +218,17 @@ class MDDReprogrammingModel(nn.Module):
             device=reprogrammed.device,
         )
 
+        # Cast to LLM dtype (e.g. bfloat16) to match frozen weights
+        llm_dtype = next(self.llm.parameters()).dtype
+        reprogrammed = reprogrammed.to(llm_dtype)
+
         # Pass through frozen LLM
         with torch.no_grad():
             llm_output = self.llm(
                 inputs_embeds=reprogrammed,
                 attention_mask=attention_mask,
             )
-        hidden_states = llm_output.last_hidden_state  # (N, P, d_llm)
+        hidden_states = llm_output.last_hidden_state.float()  # (N, P, d_llm)
 
         # Pool across sequence dimension and classify
         pooled = self.pool(hidden_states.permute(0, 2, 1))  # (N, d_llm, 1)

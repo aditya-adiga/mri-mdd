@@ -11,7 +11,7 @@ class TestParseArgs:
     def test_defaults(self) -> None:
         """All default values match the specification."""
         cfg = parse_args([])
-        assert cfg.data_dir == Path("data")
+        assert cfg.data_dir == Path("data/wc1_MDD_VBM_dataset")
         assert cfg.labels_csv == Path("data/labels.csv")
         assert cfg.patch_size == 16
         assert cfg.d_model == 128
