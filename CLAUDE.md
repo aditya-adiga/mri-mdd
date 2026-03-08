@@ -55,8 +55,9 @@ mdd_reprogramming/
 1. Run `pytest -v` — all tests must pass before committing
 2. If you changed behavior, update or add corresponding tests
 3. Update `PROGRESS.md` if completing a phase or milestone
-4. Commit with a clear, concise message describing the "why"
-5. Create a PR — never push directly to `master`
+4. **Update this file (`CLAUDE.md`)** if you encountered bugs, new conventions, architectural decisions, or gotchas that future sessions should know about
+5. Commit with a clear, concise message describing the "why"
+6. Create a PR — never push directly to `master`
 
 ## Testing
 
