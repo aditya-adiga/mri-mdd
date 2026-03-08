@@ -37,9 +37,38 @@
   - Computes class weights as `N_total / (2 * N_class)`
   - Returns `WeightedRandomSampler` with replacement
 
+---
+
+## Unit Tests — Phases 1 & 2 (COMPLETE)
+
+### Files Created
+- `mdd_reprogramming/tests/test_config.py` — 4 tests for config defaults, overrides, custom loss toggle, pathlib types
+- `mdd_reprogramming/tests/test_dataset.py` — 12 tests for MRIDataset and WeightedRandomSampler
+
+### Test Summary (16/16 passed)
+**test_config.py (4 tests):**
+- `test_defaults` — all 17 default values match spec
+- `test_override_values` — CLI args override defaults
+- `test_disable_custom_loss` — `--no-use_custom_loss` works
+- `test_paths_are_pathlib` — path args are `pathlib.Path`
+
+**test_dataset.py (12 tests):**
+- `test_length` — dataset length matches valid samples
+- `test_tensor_shape` — output shape is `(1, 121, 145, 121)`
+- `test_tensor_dtype` — tensor is `float32`
+- `test_label_dtype` — label is `torch.long` scalar
+- `test_normalization_mean` — mean ≈ 0 after normalization
+- `test_normalization_std` — std ≈ 1 after normalization
+- `test_labels_property` — `.labels` returns correct list
+- `test_subject_ids_filter` — filters to requested IDs only
+- `test_missing_file_handled_gracefully` — missing file skipped, no crash
+- `test_nii_extension_support` — loads both `.nii` and `.nii.gz`
+- `test_sampler_length` — sampler num_samples matches dataset
+- `test_balanced_weights` — weights = `N_total / (2 * N_class)`
+
 ### Remaining
 - Phase 3: Model Architecture (`model.py`)
 - Phase 4: Loss Function
 - Phase 5: Training Loop (`train.py`)
 - Phase 6: Evaluation (`evaluate.py`)
-- Phase 7: Unit Tests (`tests/`)
+- Phase 7: Remaining unit tests (`test_model.py`, `test_loss.py`, `test_train.py`)
