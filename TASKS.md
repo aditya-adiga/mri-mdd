@@ -133,7 +133,7 @@ Build a single `nn.Module` called `MDDReprogrammingModel` composed of four seque
 
 ---
 
-## Phase 4 — Loss Function
+## Phase 4 — Loss Function ✅
 
 Implement two loss modes in a `build_loss` function:
 
@@ -221,7 +221,7 @@ All phases are complete when:
 - [x] Phase 1 — Project Scaffold & Config (4 tests passing)
 - [x] Phase 2 — Dataset (12 tests passing)
 - [x] Phase 3 — Model Architecture (10 tests passing)
-- [ ] Phase 4 — Loss Function
+- [x] Phase 4 — Loss Function (11 tests passing)
 - [ ] Phase 5 — Training Loop
 - [ ] Phase 6 — Evaluation
 - [ ] Phase 7 — Remaining unit tests (test_model, test_loss, test_train)

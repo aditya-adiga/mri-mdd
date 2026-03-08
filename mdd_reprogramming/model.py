@@ -230,3 +230,69 @@ class MDDReprogrammingModel(nn.Module):
         pooled = self.pool(hidden_states.permute(0, 2, 1))  # (N, d_llm, 1)
         pooled = pooled.squeeze(-1)  # (N, d_llm)
         return self.classifier(pooled)  # (N, 2)
+
+
+def compute_class_weights(labels: list[int]) -> torch.Tensor:
+    """Compute class weights as N_total / (2 * N_class).
+
+    Args:
+        labels: List of integer class labels.
+
+    Returns:
+        Tensor of per-class weights.
+    """
+    import numpy as np
+
+    counts = np.bincount(labels)
+    n_total = len(labels)
+    weights = n_total / (2.0 * counts)
+    return torch.tensor(weights, dtype=torch.float32)
+
+
+class CustomCrossEntropyLoss(nn.Module):
+    """Cross-entropy loss that applies softmax before nn.CrossEntropyLoss.
+
+    In prior work on the MDD dataset, the standard CE formulation caused
+    training to stall at loss ~ 0.69. Passing softmax(logits) instead of
+    raw logits resolved this.
+
+    Args:
+        weight: Per-class weights tensor.
+    """
+
+    def __init__(self, weight: torch.Tensor | None = None) -> None:
+        super().__init__()
+        self.ce = nn.CrossEntropyLoss(weight=weight)
+
+    def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        """Compute custom CE loss.
+
+        Args:
+            logits: Raw logits of shape (N, C).
+            targets: Target labels of shape (N,).
+
+        Returns:
+            Scalar loss tensor.
+        """
+        probs = torch.softmax(logits, dim=1)
+        return self.ce(probs, targets)
+
+
+def build_loss(
+    labels: list[int], use_custom_loss: bool = True
+) -> nn.Module:
+    """Build the loss function with class weights.
+
+    Args:
+        labels: Training fold labels for computing class weights.
+        use_custom_loss: If True, use softmax-before-CE variant.
+
+    Returns:
+        Loss module (either CustomCrossEntropyLoss or nn.CrossEntropyLoss).
+    """
+    class_weights = compute_class_weights(labels)
+    if use_custom_loss:
+        logger.info("Using custom loss (softmax before CE)")
+        return CustomCrossEntropyLoss(weight=class_weights)
+    logger.info("Using standard CrossEntropyLoss")
+    return nn.CrossEntropyLoss(weight=class_weights)

@@ -95,8 +95,29 @@
 
 ### Cumulative: 26/26 tests passing
 
+---
+
+## Phase 4 — Loss Function (COMPLETE)
+
+### Files Modified
+- `mdd_reprogramming/model.py` — added `compute_class_weights`, `CustomCrossEntropyLoss`, `build_loss`
+
+### Files Created
+- `mdd_reprogramming/tests/test_loss.py` — 11 tests for loss functions
+
+### What Was Implemented
+- `compute_class_weights(labels)`: returns `N_total / (2 * N_class)` as float32 tensor
+- `CustomCrossEntropyLoss`: applies `softmax(logits, dim=1)` before `nn.CrossEntropyLoss`
+- `build_loss(labels, use_custom_loss)`: factory that returns either custom or standard CE with class weights
+
+### Tests (11/11 passed)
+- 3 tests for `compute_class_weights` (balanced, imbalanced, dtype)
+- 4 tests for `CustomCrossEntropyLoss` (scalar, no NaN, no NaN with weights, differentiable)
+- 4 tests for `build_loss` (custom type, standard type, standard scalar, both finite)
+
+### Cumulative: 37/37 tests passing
+
 ### Remaining
-- Phase 4: Loss Function
 - Phase 5: Training Loop (`train.py`)
 - Phase 6: Evaluation (`evaluate.py`)
-- Phase 7: Remaining unit tests (`test_loss.py`, `test_train.py`)
+- Phase 7: Remaining unit tests (`test_train.py`)
