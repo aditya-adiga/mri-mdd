@@ -97,7 +97,7 @@ Also implement a helper function `get_weighted_sampler(dataset)` that:
 
 ---
 
-## Phase 3 — Model Architecture (`model.py`)
+## Phase 3 — Model Architecture (`model.py`) ✅
 
 Build a single `nn.Module` called `MDDReprogrammingModel` composed of four sequential components:
 
@@ -220,7 +220,7 @@ Add `pytest.ini` with `testpaths = tests` and `Makefile` with a `make test` targ
 All phases are complete when:
 - [x] Phase 1 — Project Scaffold & Config (4 tests passing)
 - [x] Phase 2 — Dataset (12 tests passing)
-- [ ] Phase 3 — Model Architecture
+- [x] Phase 3 — Model Architecture (10 tests passing)
 - [ ] Phase 4 — Loss Function
 - [ ] Phase 5 — Training Loop
 - [ ] Phase 6 — Evaluation

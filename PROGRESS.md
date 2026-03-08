@@ -66,9 +66,37 @@
 - `test_sampler_length` — sampler num_samples matches dataset
 - `test_balanced_weights` — weights = `N_total / (2 * N_class)`
 
+---
+
+## Phase 3 — Model Architecture (COMPLETE)
+
+### Files Created
+- `mdd_reprogramming/model.py` — MDDReprogrammingModel with all four components
+- `mdd_reprogramming/tests/test_model.py` — 10 tests for model components
+
+### What Was Implemented
+- `PatchEncoder`: Conv3d(1→d_model, patch_size stride) + BN + ReLU + Conv3d(d_model→d_model, 3, pad=1) + BN + ReLU, Kaiming init, output (N, P, d_model) where P=441
+- `ReprogrammingLayer`: Linear(d_model→d_model) + ReLU + Dropout + Linear(d_model→d_llm), Kaiming init
+- Frozen LLM: AutoModel.from_pretrained, all params frozen, inputs_embeds + attention mask of ones
+- Classification Head: AdaptiveAvgPool1d(1) + Linear(d_llm→2)
+- `BaselineHead`: AdaptiveAvgPool3d(4,4,4) + Flatten + Linear(d_model*64→256) + ReLU + Linear(256→2)
+
+### Tests (10/10 passed)
+- `test_output_shape` — patch encoder → (N, 441, 128)
+- `test_kaiming_init` — Conv3d weights non-zero
+- `test_output_shape` — reprogramming → (N, 441, 1024)
+- `test_trainable` — reprogramming params require grad
+- `test_forward_shape` — full model → (N, 2)
+- `test_llm_frozen` — all LLM params frozen
+- `test_baseline_forward_shape` — baseline → (N, 2)
+- `test_baseline_no_llm` — no LLM attribute in baseline
+- `test_trainable_params_exclude_llm` — optimizer won't get LLM params
+- `test_attention_mask_shape` — mask is (N, P) of all ones
+
+### Cumulative: 26/26 tests passing
+
 ### Remaining
-- Phase 3: Model Architecture (`model.py`)
 - Phase 4: Loss Function
 - Phase 5: Training Loop (`train.py`)
 - Phase 6: Evaluation (`evaluate.py`)
-- Phase 7: Remaining unit tests (`test_model.py`, `test_loss.py`, `test_train.py`)
+- Phase 7: Remaining unit tests (`test_loss.py`, `test_train.py`)
