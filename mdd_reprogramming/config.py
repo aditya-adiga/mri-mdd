@@ -134,6 +134,14 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         help="Random seed for reproducibility",
     )
 
+    # Evaluation
+    parser.add_argument(
+        "--checkpoint",
+        type=Path,
+        default=None,
+        help="Path to saved model checkpoint (.pt file) for evaluation",
+    )
+
     cfg = parser.parse_args(args)
     logger.info("Configuration: %s", vars(cfg))
     return cfg

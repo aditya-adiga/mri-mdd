@@ -148,6 +148,32 @@
 
 ### Cumulative: 43/43 tests passing
 
+---
+
+## Phase 6 — Evaluation (COMPLETE)
+
+### Files Created
+- `mdd_reprogramming/evaluate.py` — standalone evaluation script
+- `mdd_reprogramming/tests/test_evaluate.py` — 6 tests for evaluation
+
+### Files Modified
+- `mdd_reprogramming/config.py` — added `--checkpoint` argument (default None)
+
+### What Was Implemented
+- `run_evaluation(args)`: loads checkpoint, reproduces blind test split, runs inference, reports all 6 metrics
+- `main(args)`: entry point with logging setup
+- Reuses `evaluate()` and `compute_metrics()` from train.py
+- Same seed reproduces identical test split as training
+
+### Tests (6/6 passed)
+- `test_checkpoint_arg_parsed` — --checkpoint parsed as Path
+- `test_checkpoint_default_none` — defaults to None
+- `test_missing_checkpoint_raises` — ValueError without --checkpoint
+- `test_returns_all_metrics` — all 6 metric keys present
+- `test_metrics_in_valid_range` — all values in [0, 1]
+- `test_reproducible_with_seed` — same seed = same results
+
+### Cumulative: 49/49 tests passing
+
 ### Remaining
-- Phase 6: Evaluation (`evaluate.py`)
 - Phase 7: Definition of Done checks

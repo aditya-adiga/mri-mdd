@@ -173,7 +173,7 @@ Implement the full training pipeline:
 
 ---
 
-## Phase 6 — Evaluation (`evaluate.py`)
+## Phase 6 — Evaluation (`evaluate.py`) ✅
 
 Implement a standalone `evaluate.py` script that:
 
@@ -223,7 +223,7 @@ All phases are complete when:
 - [x] Phase 3 — Model Architecture (10 tests passing)
 - [x] Phase 4 — Loss Function (11 tests passing)
 - [x] Phase 5 — Training Loop (6 tests passing)
-- [ ] Phase 6 — Evaluation
+- [x] Phase 6 — Evaluation (6 tests passing)
 - [ ] Phase 7 — Remaining unit tests (test_model, test_loss, test_train)
 - [ ] All files listed in the project structure exist
 - [ ] `make test` passes with no failures
