@@ -117,7 +117,37 @@
 
 ### Cumulative: 37/37 tests passing
 
+---
+
+## Phase 5 — Training Loop (COMPLETE)
+
+### Files Created
+- `mdd_reprogramming/train.py` — full training pipeline with CV and blind test evaluation
+- `mdd_reprogramming/tests/test_train.py` — 6 tests for training pipeline
+
+### Files Modified
+- `mdd_reprogramming/model.py` — fixed `compute_class_weights` to handle missing classes via `minlength`
+
+### What Was Implemented
+- `compute_metrics()`: Accuracy, Sensitivity, Specificity, F1, AUROC, AUPRC
+- `train_one_epoch()`: single epoch training loop
+- `evaluate()`: model evaluation with all metrics
+- `train_fold()`: full fold training with checkpoint saving and wandb logging
+- `evaluate_on_test()`: evaluate all fold checkpoints on blind test set, report mean ± std
+- `main()`: full pipeline — seed, device, wandb init, dataset loading, 10% blind holdout, K-fold CV, test evaluation
+- wandb integration: config, per-epoch logs, per-fold summaries, best AUROC/epoch, model artifacts
+- Only `requires_grad=True` params passed to AdamW optimizer
+
+### Tests (6/6 passed)
+- `test_perfect_predictions` — all metrics = 1.0 on perfect input
+- `test_returns_all_keys` — metrics dict has all 6 expected keys
+- `test_returns_float` — train_one_epoch returns float loss
+- `test_smoke_baseline_2_epochs` — 2 epochs on 10 synthetic samples completes
+- `test_optimizer_only_trainable_params` — optimizer excludes frozen LLM params
+- `test_checkpoint_saved` — checkpoint files saved and loadable
+
+### Cumulative: 43/43 tests passing
+
 ### Remaining
-- Phase 5: Training Loop (`train.py`)
 - Phase 6: Evaluation (`evaluate.py`)
-- Phase 7: Remaining unit tests (`test_train.py`)
+- Phase 7: Definition of Done checks

@@ -145,7 +145,7 @@ Compute class weights from the training fold as `N_total / (2 * N_class)` and pa
 
 ---
 
-## Phase 5 — Training Loop (`train.py`)
+## Phase 5 — Training Loop (`train.py`) ✅
 
 Implement the full training pipeline:
 
@@ -222,7 +222,7 @@ All phases are complete when:
 - [x] Phase 2 — Dataset (12 tests passing)
 - [x] Phase 3 — Model Architecture (10 tests passing)
 - [x] Phase 4 — Loss Function (11 tests passing)
-- [ ] Phase 5 — Training Loop
+- [x] Phase 5 — Training Loop (6 tests passing)
 - [ ] Phase 6 — Evaluation
 - [ ] Phase 7 — Remaining unit tests (test_model, test_loss, test_train)
 - [ ] All files listed in the project structure exist

@@ -232,19 +232,22 @@ class MDDReprogrammingModel(nn.Module):
         return self.classifier(pooled)  # (N, 2)
 
 
-def compute_class_weights(labels: list[int]) -> torch.Tensor:
+def compute_class_weights(labels: list[int], num_classes: int = 2) -> torch.Tensor:
     """Compute class weights as N_total / (2 * N_class).
 
     Args:
         labels: List of integer class labels.
+        num_classes: Number of classes (ensures output has correct size).
 
     Returns:
-        Tensor of per-class weights.
+        Tensor of per-class weights with shape (num_classes,).
     """
     import numpy as np
 
-    counts = np.bincount(labels)
+    counts = np.bincount(labels, minlength=num_classes)
     n_total = len(labels)
+    # Avoid division by zero for missing classes
+    counts = np.maximum(counts, 1)
     weights = n_total / (2.0 * counts)
     return torch.tensor(weights, dtype=torch.float32)
 
