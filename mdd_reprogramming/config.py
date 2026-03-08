@@ -104,6 +104,21 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         help="Fraction of data held out as blind test set",
     )
 
+    # Loss
+    parser.add_argument(
+        "--loss_fn",
+        type=str,
+        default="ce",
+        choices=["ce", "focal"],
+        help="Loss function: 'ce' for CrossEntropyLoss, 'focal' for FocalLoss",
+    )
+    parser.add_argument(
+        "--label_smoothing",
+        type=float,
+        default=0.1,
+        help="Label smoothing factor (0 = no smoothing)",
+    )
+
     # Mode flags
     parser.add_argument(
         "--baseline",

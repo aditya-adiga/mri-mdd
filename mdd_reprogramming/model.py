@@ -186,9 +186,20 @@ class MDDReprogrammingModel(nn.Module):
             for param in self.llm.parameters():
                 param.requires_grad = False
             self.llm.eval()
+            # Gradient checkpointing: recompute activations during backward
+            # to save memory while still allowing gradient flow
+            self.llm.gradient_checkpointing_enable()
 
             self.pool = nn.AdaptiveAvgPool1d(1)
-            self.classifier = nn.Linear(d_llm, 2)
+            self.classifier = nn.Sequential(
+                nn.Linear(d_llm, 512),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                nn.Linear(512, 128),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                nn.Linear(128, 2),
+            )
 
         logger.info(
             "Model initialised: patches=%d, d_model=%d, baseline=%s",
@@ -222,12 +233,12 @@ class MDDReprogrammingModel(nn.Module):
         llm_dtype = next(self.llm.parameters()).dtype
         reprogrammed = reprogrammed.to(llm_dtype)
 
-        # Pass through frozen LLM
-        with torch.no_grad():
-            llm_output = self.llm(
-                inputs_embeds=reprogrammed,
-                attention_mask=attention_mask,
-            )
+        # Pass through frozen LLM (requires_grad=False prevents weight updates,
+        # gradient checkpointing recomputes activations to save memory)
+        llm_output = self.llm(
+            inputs_embeds=reprogrammed,
+            attention_mask=attention_mask,
+        )
         hidden_states = llm_output.last_hidden_state.float()  # (N, P, d_llm)
 
         # Pool across sequence dimension and classify
@@ -256,15 +267,76 @@ def compute_class_weights(labels: list[int], num_classes: int = 2) -> torch.Tens
     return torch.tensor(weights, dtype=torch.float32)
 
 
-def build_loss(labels: list[int]) -> nn.Module:
-    """Build CrossEntropyLoss with class weights.
+class FocalLoss(nn.Module):
+    """Focal Loss with class weights and label smoothing.
+
+    Reduces the relative loss for well-classified examples, focusing
+    training on hard negatives. Applies label smoothing before computing loss.
+
+    Args:
+        weight: Per-class weights tensor of shape (num_classes,).
+        gamma: Focusing parameter. Higher values down-weight easy examples more.
+        label_smoothing: Label smoothing factor in [0, 1).
+    """
+
+    def __init__(
+        self,
+        weight: torch.Tensor,
+        gamma: float = 2.0,
+        label_smoothing: float = 0.1,
+    ) -> None:
+        super().__init__()
+        self.register_buffer("weight", weight)
+        self.gamma = gamma
+        self.label_smoothing = label_smoothing
+
+    def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        """Compute focal loss.
+
+        Args:
+            logits: Predicted logits of shape (N, C).
+            targets: Ground truth labels of shape (N,).
+
+        Returns:
+            Scalar loss value.
+        """
+        num_classes = logits.size(1)
+        probs = torch.softmax(logits, dim=1)
+
+        # Label smoothing: convert hard targets to soft
+        smooth_targets = torch.full_like(
+            probs, self.label_smoothing / (num_classes - 1)
+        )
+        smooth_targets.scatter_(
+            1, targets.unsqueeze(1), 1.0 - self.label_smoothing
+        )
+
+        # Focal modulation: (1 - p_t)^gamma
+        focal_weight = (1.0 - probs) ** self.gamma
+
+        # Per-sample class weight
+        class_w = self.weight[targets].unsqueeze(1)  # (N, 1)
+
+        # Focal cross-entropy with smoothed targets
+        log_probs = torch.log_softmax(logits, dim=1)
+        loss = -class_w * focal_weight * smooth_targets * log_probs
+        return loss.sum(dim=1).mean()
+
+
+def build_loss(labels: list[int], loss_fn: str = "ce", label_smoothing: float = 0.1) -> nn.Module:
+    """Build loss function with class weights.
 
     Args:
         labels: Training fold labels for computing class weights.
+        loss_fn: Loss type — "ce" for CrossEntropyLoss, "focal" for FocalLoss.
+        label_smoothing: Label smoothing factor (used by both ce and focal).
 
     Returns:
-        nn.CrossEntropyLoss with per-class weights.
+        Loss module.
     """
     class_weights = compute_class_weights(labels)
-    logger.info("Using CrossEntropyLoss with class weights")
-    return nn.CrossEntropyLoss(weight=class_weights)
+    if loss_fn == "focal":
+        logger.info("Using FocalLoss with class weights, label_smoothing=%.2f", label_smoothing)
+        return FocalLoss(weight=class_weights, label_smoothing=label_smoothing)
+    logger.info("Using CrossEntropyLoss with class weights, label_smoothing=%.2f", label_smoothing)
+    return nn.CrossEntropyLoss(weight=class_weights, label_smoothing=label_smoothing)

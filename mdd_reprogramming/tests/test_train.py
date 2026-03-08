@@ -152,6 +152,7 @@ class TestSmokeTraining:
             nn.Parameter(torch.randn(4, 4), requires_grad=True)
         ]
         fake_llm.eval = MagicMock(return_value=fake_llm)
+        fake_llm.gradient_checkpointing_enable = MagicMock()
         mock_from_pretrained.return_value = fake_llm
 
         model = MDDReprogrammingModel(

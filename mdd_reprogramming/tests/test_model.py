@@ -40,6 +40,7 @@ def _make_fake_llm(d_llm: int = D_LLM) -> MagicMock:
 
     fake_llm.side_effect = fake_forward
     fake_llm.eval = MagicMock(return_value=fake_llm)
+    fake_llm.gradient_checkpointing_enable = MagicMock()
     return fake_llm
 
 

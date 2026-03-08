@@ -180,7 +180,7 @@ def train_fold(
     ).to(device)
 
     # Loss
-    loss_fn = build_loss(train_dataset.labels)
+    loss_fn = build_loss(train_dataset.labels, loss_fn=cfg.loss_fn, label_smoothing=cfg.label_smoothing)
     loss_fn = loss_fn.to(device)
 
     # Optimizer — only trainable parameters
@@ -230,6 +230,9 @@ def train_fold(
             import wandb
 
             wandb.log({
+                "train_loss": train_loss,
+                "val_loss": val_loss,
+                **val_metrics,
                 f"fold_{fold}/train_loss": train_loss,
                 f"fold_{fold}/val_loss": val_loss,
                 **{f"fold_{fold}/{k}": v for k, v in val_metrics.items()},
@@ -311,7 +314,7 @@ def evaluate_on_test(
         ).to(device)
         model.load_state_dict(torch.load(ckpt_path, map_location=device, weights_only=True))
 
-        loss_fn = build_loss(test_dataset.labels)
+        loss_fn = build_loss(test_dataset.labels, loss_fn=cfg.loss_fn, label_smoothing=cfg.label_smoothing)
         loss_fn = loss_fn.to(device)
         _, metrics = evaluate(model, test_loader, loss_fn, device)
         all_fold_metrics.append(metrics)
@@ -353,6 +356,9 @@ def main(args: list[str] | None = None) -> None:
 
         wandb.init(project="mdd-reprogramming")
         wandb.config.update(vars(cfg))
+        # Define epoch as x-axis for all metrics
+        wandb.define_metric("epoch")
+        wandb.define_metric("*", step_metric="epoch")
 
     # Load full dataset
     full_dataset = MRIDataset(data_dir=cfg.data_dir, labels_csv=cfg.labels_csv)
