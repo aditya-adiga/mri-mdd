@@ -128,7 +128,13 @@ def parse_args(args: list[str] | None = None) -> argparse.Namespace:
         help="Random seed for reproducibility",
     )
 
-    # Evaluation
+    # Checkpoints
+    parser.add_argument(
+        "--checkpoint_dir",
+        type=Path,
+        default=Path("checkpoints"),
+        help="Base directory for saving checkpoints",
+    )
     parser.add_argument(
         "--checkpoint",
         type=Path,

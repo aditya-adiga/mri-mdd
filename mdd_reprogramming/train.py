@@ -190,7 +190,9 @@ def train_fold(
     best_auroc = -1.0
     best_metrics: dict[str, float] = {}
     best_epoch = -1
-    ckpt_path = checkpoint_dir / f"best_fold_{fold}.pt"
+    fold_dir = checkpoint_dir / f"fold_{fold}"
+    fold_dir.mkdir(parents=True, exist_ok=True)
+    ckpt_path = fold_dir / "best.pt"
 
     for epoch in range(cfg.epochs):
         train_loss = train_one_epoch(model, train_loader, loss_fn, optimizer, device)
@@ -335,9 +337,20 @@ def main(args: list[str] | None = None) -> None:
         "Split: %d train+val, %d blind test", len(train_val_indices), n_test
     )
 
-    # Checkpoint directory
-    checkpoint_dir = Path("checkpoints")
-    checkpoint_dir.mkdir(exist_ok=True)
+    # Checkpoint directory: checkpoints/<timestamp>_<mode>/
+    from datetime import datetime
+    import json
+
+    mode_tag = "baseline" if cfg.baseline else "llm"
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    run_dir = cfg.checkpoint_dir / f"{timestamp}_{mode_tag}"
+    run_dir.mkdir(parents=True, exist_ok=True)
+
+    # Save config for reproducibility
+    with open(run_dir / "config.json", "w") as f:
+        config_dict = {k: str(v) if isinstance(v, Path) else v for k, v in vars(cfg).items()}
+        json.dump(config_dict, f, indent=2)
+    logger.info("Run directory: %s", run_dir)
 
     # K-fold cross-validation (no stratification)
     kf = KFold(n_splits=cfg.n_folds, shuffle=False)
@@ -362,7 +375,7 @@ def main(args: list[str] | None = None) -> None:
             val_dataset=val_ds,
             cfg=cfg,
             device=device,
-            checkpoint_dir=checkpoint_dir,
+            checkpoint_dir=run_dir,
             use_wandb=use_wandb,
         )
         fold_metrics.append(best_metrics)
